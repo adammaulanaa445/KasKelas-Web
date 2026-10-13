@@ -1,0 +1,239 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Siswa - Kaskelas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-10 font-sans">
+
+    <main class="max-w-7xl mx-auto">
+        <header class="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-600">👨‍🎓 Daftar Siswa Kelas</h1>
+                <p class="text-gray-500 mt-1">Demo pengelolaan data siswa Kaskelas.</p>
+            </div>
+            <a href="index.html"
+               class="inline-flex items-center justify-center bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow transition">
+                🏠 Dashboard
+            </a>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <section class="bg-white p-6 rounded-xl shadow-md h-fit border-t-4 border-blue-500">
+                <h2 id="form-title" class="text-lg font-bold mb-4 text-gray-700">Tambah Siswa</h2>
+
+                <form id="siswa-form" class="space-y-4">
+                    <div>
+                        <label for="nomor_absen" class="block text-xs font-bold text-gray-500 uppercase mb-1">No Absen</label>
+                        <input type="number" id="nomor_absen" min="1"
+                               placeholder="Contoh: 1"
+                               class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                               required>
+                    </div>
+
+                    <div>
+                        <label for="nama" class="block text-xs font-bold text-gray-500 uppercase mb-1">Nama Siswa</label>
+                        <input type="text" id="nama"
+                               placeholder="Nama Lengkap"
+                               class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                               required>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <button type="submit" id="submit-btn"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold transition shadow">
+                            Simpan Siswa
+                        </button>
+                        <button type="button" id="cancel-btn"
+                                class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded font-bold hidden">
+                            Batal Edit
+                        </button>
+                    </div>
+                </form>
+
+                <p class="text-xs text-gray-400 mt-4">
+                    Mode demo: perubahan data hanya tersimpan di browser ini.
+                </p>
+            </section>
+
+            <section class="md:col-span-2 bg-white p-6 rounded-xl shadow-md border-t-4 border-emerald-500">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <h2 class="text-lg font-bold text-gray-700">Data Siswa</h2>
+                    <input id="search" type="search" placeholder="Cari nama siswa..."
+                           class="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b bg-gray-50">
+                                <th class="p-3 text-gray-600 font-bold uppercase text-xs">No Absen</th>
+                                <th class="p-3 text-gray-600 font-bold uppercase text-xs">Nama</th>
+                                <th class="p-3 text-gray-600 font-bold uppercase text-xs text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="siswa-list"></tbody>
+                    </table>
+                </div>
+
+                <p id="empty-message" class="text-center text-gray-400 py-8 hidden">
+                    Belum ada data siswa. Tambahkan siswa melalui formulir.
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Data contoh untuk demo. Silakan ganti dengan data fiktif milikmu.
+        let siswa = [
+            { id: 1, nomor_absen: 1, nama: "Contoh Siswa 1" },
+            { id: 2, nomor_absen: 2, nama: "Contoh Siswa 2" },
+            { id: 3, nomor_absen: 3, nama: "Contoh Siswa 3" }
+        ];
+
+        let nextId = 4;
+        let editId = null;
+
+        const form = document.getElementById("siswa-form");
+        const nomorAbsen = document.getElementById("nomor_absen");
+        const nama = document.getElementById("nama");
+        const formTitle = document.getElementById("form-title");
+        const submitBtn = document.getElementById("submit-btn");
+        const cancelBtn = document.getElementById("cancel-btn");
+        const siswaList = document.getElementById("siswa-list");
+        const emptyMessage = document.getElementById("empty-message");
+        const search = document.getElementById("search");
+
+        function renderSiswa() {
+            const keyword = search.value.trim().toLowerCase();
+
+            const filtered = siswa
+                .filter(item => item.nama.toLowerCase().includes(keyword))
+                .sort((a, b) => a.nomor_absen - b.nomor_absen);
+
+            siswaList.replaceChildren();
+            emptyMessage.classList.toggle("hidden", filtered.length !== 0);
+
+            filtered.forEach(item => {
+                const tr = document.createElement("tr");
+                tr.className = "border-b hover:bg-gray-50";
+
+                const tdAbsen = document.createElement("td");
+                tdAbsen.className = "p-3 text-gray-700";
+                tdAbsen.textContent = item.nomor_absen;
+
+                const tdNama = document.createElement("td");
+                tdNama.className = "p-3 font-bold text-gray-800 uppercase";
+                tdNama.textContent = item.nama;
+
+                const tdAksi = document.createElement("td");
+                tdAksi.className = "p-3";
+
+                const actions = document.createElement("div");
+                actions.className = "flex justify-center gap-2";
+
+                const editBtn = document.createElement("button");
+                editBtn.type = "button";
+                editBtn.textContent = "Edit";
+                editBtn.className = "bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-xs font-bold";
+                editBtn.addEventListener("click", () => prepareEdit(item.id));
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.type = "button";
+                deleteBtn.textContent = "Hapus";
+                deleteBtn.className = "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold";
+                deleteBtn.addEventListener("click", () => deleteSiswa(item.id));
+
+                actions.append(editBtn, deleteBtn);
+                tdAksi.append(actions);
+                tr.append(tdAbsen, tdNama, tdAksi);
+                siswaList.append(tr);
+            });
+        }
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const absen = Number(nomorAbsen.value);
+            const namaSiswa = nama.value.trim();
+
+            if (!Number.isInteger(absen) || absen < 1 || !namaSiswa) {
+                alert("Isi nomor absen dan nama siswa dengan benar.");
+                return;
+            }
+
+            const duplicate = siswa.some(item =>
+                item.nomor_absen === absen && item.id !== editId
+            );
+
+            if (duplicate) {
+                alert("Nomor absen tersebut sudah digunakan.");
+                return;
+            }
+
+            if (editId !== null) {
+                const item = siswa.find(s => s.id === editId);
+                if (item) {
+                    item.nomor_absen = absen;
+                    item.nama = namaSiswa;
+                }
+            } else {
+                siswa.push({
+                    id: nextId++,
+                    nomor_absen: absen,
+                    nama: namaSiswa
+                });
+            }
+
+            resetForm();
+            renderSiswa();
+        });
+
+        function prepareEdit(id) {
+            const item = siswa.find(s => s.id === id);
+            if (!item) return;
+
+            editId = id;
+            nomorAbsen.value = item.nomor_absen;
+            nama.value = item.nama;
+            formTitle.textContent = "Edit Data Siswa";
+            submitBtn.textContent = "Perbarui Data";
+            submitBtn.classList.replace("bg-blue-600", "bg-yellow-500");
+            submitBtn.classList.replace("hover:bg-blue-700", "hover:bg-yellow-600");
+            cancelBtn.classList.remove("hidden");
+            nomorAbsen.focus();
+        }
+
+        function resetForm() {
+            editId = null;
+            form.reset();
+            formTitle.textContent = "Tambah Siswa";
+            submitBtn.textContent = "Simpan Siswa";
+            submitBtn.classList.replace("bg-yellow-500", "bg-blue-600");
+            submitBtn.classList.replace("hover:bg-yellow-600", "hover:bg-blue-700");
+            cancelBtn.classList.add("hidden");
+        }
+
+        cancelBtn.addEventListener("click", resetForm);
+
+        function deleteSiswa(id) {
+            const item = siswa.find(s => s.id === id);
+            if (!item || !confirm(`Hapus ${item.nama} dari daftar demo?`)) return;
+
+            siswa = siswa.filter(s => s.id !== id);
+
+            if (editId === id) resetForm();
+            renderSiswa();
+        }
+
+        search.addEventListener("input", renderSiswa);
+
+        renderSiswa();
+    </script>
+</body>
+</html>
+```

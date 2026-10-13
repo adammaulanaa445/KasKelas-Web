@@ -1,0 +1,440 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Kas - Kaskelas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+<main class="max-w-[1600px] mx-auto px-4 py-8">
+
+    <header class="flex flex-wrap justify-between items-center gap-3 mb-8">
+        <nav class="flex flex-wrap gap-2">
+            <a href="index.html" class="bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">🏠 Dashboard</a>
+            <a href="siswa.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">👨‍🎓 Daftar Siswa</a>
+            <button onclick="window.print()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">📄 Cetak / PDF</button>
+        </nav>
+        <span class="text-xs text-gray-500">MODE DEMO · Data contoh</span>
+    </header>
+
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-8">💰 Monitoring Kas Kelas</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <aside class="space-y-6">
+            <section class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500">
+                <h2 class="text-xl font-semibold mb-4">➕ Tambah Kas</h2>
+                <form id="kas-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm mb-1">Nama Siswa</label>
+                        <select id="kas-siswa" class="w-full border rounded-lg px-3 py-2" required></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Tanggal Bayar</label>
+                        <input id="kas-tanggal" type="date" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Nominal (Rp)</label>
+                        <input id="kas-jumlah" type="number" min="1" placeholder="5000" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold">Simpan Kas</button>
+                </form>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow border-t-4 border-red-500">
+                <h2 class="text-xl font-semibold mb-4">💸 Pengeluaran</h2>
+                <form id="keluar-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm mb-1">Keterangan</label>
+                        <input id="keluar-keterangan" type="text" placeholder="Contoh: Alat kebersihan" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Tanggal</label>
+                        <input id="keluar-tanggal" type="date" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Nominal (Rp)</label>
+                        <input id="keluar-jumlah" type="number" min="1" placeholder="10000" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <button class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold">Simpan Pengeluaran</button>
+                </form>
+            </section>
+            <p class="text-xs text-gray-500">Data hanya disimpan di browser demo ini.</p>
+        </aside>
+
+        <div class="lg:col-span-3 space-y-6">
+            <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="bg-gray-600 p-4 rounded-xl shadow text-white">
+                    <p class="text-xs uppercase">Saldo Pindahan</p>
+                    <p id="saldo-awal" class="text-xl font-black">Rp 100.000</p>
+                </div>
+                <div class="bg-green-600 p-4 rounded-xl shadow text-white">
+                    <p class="text-xs uppercase">Masuk (Bulan Ini)</p>
+                    <p id="total-masuk" class="text-xl font-black">Rp 0</p>
+                </div>
+                <div class="bg-red-600 p-4 rounded-xl shadow text-white">
+                    <p class="text-xs uppercase">Keluar (Bulan Ini)</p>
+                    <p id="total-keluar" class="text-xl font-black">Rp 0</p>
+                </div>
+                <div class="bg-blue-800 p-4 rounded-xl shadow text-white border-2 border-yellow-400">
+                    <p class="text-xs uppercase text-yellow-300">Total Kas Tersedia</p>
+                    <p id="saldo-total" class="text-xl font-black">Rp 0</p>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow border-t-4 border-yellow-500">
+                <h2 class="text-xl font-bold mb-4">📊 Tren Pemasukan Tahun Ini</h2>
+                <div class="h-[250px]"><canvas id="kasChart"></canvas></div>
+            </section>
+
+            <section class="bg-white p-4 rounded-xl shadow flex flex-wrap gap-3 justify-between">
+                <input id="search" type="search" placeholder="🔍 Cari nama siswa..." class="border rounded-lg px-3 py-2 text-sm w-full md:w-64">
+                <select id="filter-bulan" class="border rounded-lg px-3 py-2 text-sm"></select>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
+                <h2 class="text-xl font-bold mb-4">🗓️ Matriks Pembayaran Mingguan</h2>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="w-full text-left text-xs">
+                        <thead id="matriks-head"></thead>
+                        <tbody id="matriks-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-400">
+                <h2 class="text-lg font-bold mb-4">📝 Riwayat Kas</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="p-3">Siswa</th>
+                                <th class="p-3">Tanggal</th>
+                                <th class="p-3">Nominal</th>
+                                <th class="p-3">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="riwayat-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow border-t-4 border-orange-500">
+                <h2 class="text-lg font-bold mb-4">⚠️ Tunggakan Siswa</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 border-b">
+                            <tr><th class="p-3">Nama</th><th class="p-3">Kurang</th><th class="p-3">Status</th></tr>
+                        </thead>
+                        <tbody id="tunggakan-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow border-t-4 border-red-400">
+                <h2 class="text-lg font-bold mb-4">💸 Riwayat Pengeluaran</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="p-3">Keterangan</th><th class="p-3">Tanggal</th>
+                                <th class="p-3">Nominal</th><th class="p-3">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pengeluaran-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script>
+const STORAGE_KEY = "kaskelas-demo-v1";
+const saldoPindahan = 100000;
+const iuranMingguan = 5000;
+const namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const siswa = [
+    {id:1, nomor_absen:1, nama:"Contoh Siswa 1"},
+    {id:2, nomor_absen:2, nama:"Contoh Siswa 2"},
+    {id:3, nomor_absen:3, nama:"Contoh Siswa 3"},
+    {id:4, nomor_absen:4, nama:"Contoh Siswa 4"},
+    {id:5, nomor_absen:5, nama:"Contoh Siswa 5"}
+];
+
+function tanggalOffset(offset) {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+const dataAwal = {
+    kas: [
+        {id:1,siswaId:1,tanggal:tanggalOffset(-1),jumlah:5000},
+        {id:2,siswaId:2,tanggal:tanggalOffset(-2),jumlah:5000},
+        {id:3,siswaId:3,tanggal:tanggalOffset(-3),jumlah:5000},
+        {id:4,siswaId:1,tanggal:tanggalOffset(-8),jumlah:5000},
+        {id:5,siswaId:4,tanggal:tanggalOffset(-9),jumlah:5000}
+    ],
+    pengeluaran: [
+        {id:101,keterangan:"Contoh: Alat kebersihan",tanggal:tanggalOffset(-2),jumlah:10000},
+        {id:102,keterangan:"Contoh: Perlengkapan kelas",tanggal:tanggalOffset(-5),jumlah:15000}
+    ]
+};
+
+function muatData() {
+    try {
+        const d = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (d && Array.isArray(d.kas) && Array.isArray(d.pengeluaran)) return d;
+    } catch {}
+    return JSON.parse(JSON.stringify(dataAwal));
+}
+
+let data = muatData();
+const rupiah = n => "Rp " + Number(n).toLocaleString("id-ID");
+const siswaNama = id => siswa.find(s => s.id === Number(id))?.nama || "Siswa demo";
+const formatTanggal = t => new Date(t + "T00:00:00").toLocaleDateString("id-ID");
+const bulanIni = () => new Date().toISOString().slice(0,7);
+const periode = () => document.getElementById("filter-bulan").value;
+const dalamBulan = t => t.startsWith(periode());
+
+function simpan() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+const pilihSiswa = document.getElementById("kas-siswa");
+pilihSiswa.add(new Option("-- Pilih Siswa --",""));
+siswa.forEach(s => pilihSiswa.add(new Option(`${s.nomor_absen}. ${s.nama}`,s.id)));
+
+const filterBulan = document.getElementById("filter-bulan");
+for (let i=5; i>=0; i--) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth()-i);
+    const value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    filterBulan.add(new Option(`${namaBulan[d.getMonth()]} ${d.getFullYear()}`,value));
+}
+filterBulan.value = bulanIni();
+
+document.getElementById("kas-tanggal").value = tanggalOffset(0);
+document.getElementById("keluar-tanggal").value = tanggalOffset(0);
+
+function tambahSel(tr, teks, kelas="p-3") {
+    const td = document.createElement("td");
+    td.className = kelas;
+    td.textContent = teks;
+    tr.appendChild(td);
+    return td;
+}
+
+function buatTombol(teks, kelas, aksi) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = teks;
+    b.className = kelas;
+    b.addEventListener("click", aksi);
+    return b;
+}
+
+function renderRiwayat() {
+    const body = document.getElementById("riwayat-body");
+    body.replaceChildren();
+    const q = document.getElementById("search").value.trim().toLowerCase();
+
+    const list = data.kas.filter(k => dalamBulan(k.tanggal) &&
+        siswaNama(k.siswaId).toLowerCase().includes(q))
+        .sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+
+    if (!list.length) {
+        const tr = document.createElement("tr");
+        tambahSel(tr,"Belum ada transaksi kas pada bulan ini.","p-3 text-center text-gray-400");
+        body.appendChild(tr);
+        return;
+    }
+
+    list.forEach(k => {
+        const tr = document.createElement("tr");
+        tr.className = "border-b hover:bg-gray-50";
+        tambahSel(tr,siswaNama(k.siswaId));
+        tambahSel(tr,formatTanggal(k.tanggal));
+        tambahSel(tr,rupiah(k.jumlah),"p-3 text-green-600 font-bold");
+        const td = tambahSel(tr,"");
+        td.appendChild(buatTombol("Edit","bg-yellow-100 text-yellow-700 px-3 py-1 rounded font-bold",
+            () => location.href = `edit-kas.html?id=${encodeURIComponent(k.id)}`));
+        td.appendChild(document.createTextNode(" "));
+        td.appendChild(buatTombol("Hapus","bg-red-100 text-red-700 px-3 py-1 rounded font-bold",
+            () => {
+                if (!confirm("Hapus transaksi kas demo ini?")) return;
+                data.kas = data.kas.filter(x => x.id !== k.id);
+                simpan();
+                render();
+            }));
+        body.appendChild(tr);
+    });
+}
+
+function renderPengeluaran() {
+    const body = document.getElementById("pengeluaran-body");
+    body.replaceChildren();
+    const list = data.pengeluaran.filter(p => dalamBulan(p.tanggal))
+        .sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+
+    if (!list.length) {
+        const tr = document.createElement("tr");
+        tambahSel(tr,"Belum ada pengeluaran pada bulan ini.","p-3 text-center text-gray-400");
+        body.appendChild(tr);
+        return;
+    }
+
+    list.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.className = "border-b hover:bg-gray-50";
+        tambahSel(tr,p.keterangan);
+        tambahSel(tr,formatTanggal(p.tanggal));
+        tambahSel(tr,rupiah(p.jumlah),"p-3 text-red-600 font-bold");
+        const td = tambahSel(tr,"");
+        td.appendChild(buatTombol("Edit","bg-yellow-100 text-yellow-700 px-3 py-1 rounded font-bold",
+            () => location.href = `edit-pengeluaran.html?id=${encodeURIComponent(p.id)}`));
+        td.appendChild(document.createTextNode(" "));
+        td.appendChild(buatTombol("Hapus","bg-red-100 text-red-700 px-3 py-1 rounded font-bold",
+            () => {
+                if (!confirm("Hapus pengeluaran demo ini?")) return;
+                data.pengeluaran = data.pengeluaran.filter(x => x.id !== p.id);
+                simpan();
+                render();
+            }));
+        body.appendChild(tr);
+    });
+}
+
+function renderMatriks() {
+    const [tahun,bulan] = periode().split("-").map(Number);
+    const hari = new Date(tahun,bulan,0).getDate();
+    const minggu = Math.ceil(hari/7);
+    const head = document.getElementById("matriks-head");
+    const body = document.getElementById("matriks-body");
+    head.replaceChildren();
+    body.replaceChildren();
+
+    const trh = document.createElement("tr");
+    trh.className = "bg-gray-100";
+    tambahSel(trh,"Nama Siswa","p-3 font-bold border-b");
+    for (let w=1; w<=minggu; w++) tambahSel(trh,`M-${w}`,"p-3 text-center border-b");
+    head.appendChild(trh);
+
+    siswa.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.className = "border-b";
+        tambahSel(tr,s.nama,"p-3 font-semibold uppercase");
+        for (let w=1; w<=minggu; w++) {
+            const bayar = data.kas.some(k => k.siswaId===s.id && k.tanggal.startsWith(periode()) &&
+                Math.ceil(Number(k.tanggal.slice(8,10))/7)===w);
+            tambahSel(tr,bayar ? "✓" : "—",`p-3 text-center ${bayar ? "text-green-600 font-bold" : "text-gray-300"}`);
+        }
+        body.appendChild(tr);
+    });
+}
+
+function renderTunggakan() {
+    const body = document.getElementById("tunggakan-body");
+    body.replaceChildren();
+    const [tahun,bulan] = periode().split("-").map(Number);
+    const minggu = Math.ceil(new Date(tahun,bulan,0).getDate()/7);
+
+    siswa.forEach(s => {
+        const terbayar = new Set(data.kas.filter(k => k.siswaId===s.id && k.tanggal.startsWith(periode()))
+            .map(k => Math.ceil(Number(k.tanggal.slice(8,10))/7)));
+        const kurang = Math.max(0,minggu-terbayar.size)*iuranMingguan;
+        const tr = document.createElement("tr");
+        tr.className = "border-b";
+        tambahSel(tr,s.nama);
+        tambahSel(tr,kurang ? rupiah(kurang) : "-","p-3 text-red-600 font-bold");
+        tambahSel(tr,kurang ? "BELUM LUNAS" : "LUNAS",
+            `p-3 font-bold ${kurang ? "text-red-600" : "text-green-600"}`);
+        body.appendChild(tr);
+    });
+}
+
+let chart;
+function renderChart() {
+    const tahun = Number(periode().slice(0,4));
+    const totals = Array(12).fill(0);
+    data.kas.forEach(k => {
+        const [y,m] = k.tanggal.split("-").map(Number);
+        if (y===tahun) totals[m-1] += Number(k.jumlah);
+    });
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById("kasChart"), {
+        type:"line",
+        data:{
+            labels:namaBulan.map(b=>b.slice(0,3)),
+            datasets:[{
+                label:"Pemasukan (Rp)",
+                data:totals,
+                borderColor:"#f59e0b",
+                backgroundColor:"rgba(245,158,11,.1)",
+                fill:true,
+                tension:.35
+            }]
+        },
+        options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}
+    });
+}
+
+function render() {
+    const masuk = data.kas.filter(k=>dalamBulan(k.tanggal)).reduce((n,k)=>n+Number(k.jumlah),0);
+    const keluar = data.pengeluaran.filter(p=>dalamBulan(p.tanggal)).reduce((n,p)=>n+Number(p.jumlah),0);
+    const semuaMasuk = data.kas.reduce((n,k)=>n+Number(k.jumlah),0);
+    const semuaKeluar = data.pengeluaran.reduce((n,p)=>n+Number(p.jumlah),0);
+
+    document.getElementById("total-masuk").textContent = rupiah(masuk);
+    document.getElementById("total-keluar").textContent = rupiah(keluar);
+    document.getElementById("saldo-total").textContent = rupiah(saldoPindahan+semuaMasuk-semuaKeluar);
+
+    renderRiwayat();
+    renderPengeluaran();
+    renderMatriks();
+    renderTunggakan();
+    renderChart();
+}
+
+document.getElementById("kas-form").addEventListener("submit",e=>{
+    e.preventDefault();
+    const siswaId = Number(pilihSiswa.value);
+    const tanggal = document.getElementById("kas-tanggal").value;
+    const jumlah = Number(document.getElementById("kas-jumlah").value);
+    if (!siswaId || !tanggal || !Number.isFinite(jumlah) || jumlah<=0) return alert("Periksa data kas.");
+
+    data.kas.push({id:Date.now(),siswaId,tanggal,jumlah});
+    simpan();
+    e.target.reset();
+    document.getElementById("kas-tanggal").value=tanggalOffset(0);
+    render();
+    alert("Kas demo berhasil ditambahkan.");
+});
+
+document.getElementById("keluar-form").addEventListener("submit",e=>{
+    e.preventDefault();
+    const keterangan = document.getElementById("keluar-keterangan").value.trim();
+    const tanggal = document.getElementById("keluar-tanggal").value;
+    const jumlah = Number(document.getElementById("keluar-jumlah").value);
+    if (!keterangan || !tanggal || !Number.isFinite(jumlah) || jumlah<=0) return alert("Periksa data pengeluaran.");
+
+    data.pengeluaran.push({id:Date.now(),keterangan,tanggal,jumlah});
+    simpan();
+    e.target.reset();
+    document.getElementById("keluar-tanggal").value=tanggalOffset(0);
+    render();
+    alert("Pengeluaran demo berhasil ditambahkan.");
+});
+
+filterBulan.addEventListener("change",render);
+document.getElementById("search").addEventListener("input",render);
+render();
+</script>
+</body>
+</html>
+```

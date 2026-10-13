@@ -1,0 +1,123 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Pengeluaran - Kaskelas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 font-sans">
+    <main class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border-t-8 border-red-500">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2 text-center">💸 Edit Pengeluaran</h1>
+        <p class="text-center text-gray-500 text-sm mb-6">Ubah data pengeluaran kas kelas.</p>
+
+        <form id="form" class="space-y-4">
+            <div>
+                <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan</label>
+                <input id="keterangan" type="text" required
+                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-red-400 outline-none">
+            </div>
+            <div>
+                <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal</label>
+                <input id="tanggal" type="date" required
+                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-red-400 outline-none">
+            </div>
+            <div>
+                <label for="jumlah" class="block text-sm font-medium text-gray-700">Nominal (Rp)</label>
+                <input id="jumlah" type="number" min="1" required
+                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-red-400 outline-none">
+            </div>
+            <button type="submit"
+                class="w-full bg-red-600 text-white py-2 rounded-lg font-bold hover:bg-red-700 transition">
+                Simpan Perubahan
+            </button>
+        </form>
+
+        <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center"><span class="w-full border-t"></span></div>
+            <div class="relative flex justify-center text-xs uppercase">
+                <span class="bg-white px-2 text-gray-400">Atau</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <button id="hapus" type="button"
+                class="w-full bg-white border border-red-500 text-red-500 py-2 rounded-lg font-bold hover:bg-red-50">
+                🗑️ Hapus
+            </button>
+            <a href="kas.html"
+                class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-bold text-center hover:bg-gray-300">
+                Batal / Kembali
+            </a>
+        </div>
+        <p class="text-xs text-gray-400 mt-5 text-center">Mode demo — bukan transaksi database asli.</p>
+    </main>
+
+<script>
+const KEY = "kaskelas-demo-v1";
+const params = new URLSearchParams(location.search);
+const id = Number(params.get("id"));
+
+function ambilData() {
+    try {
+        const data = JSON.parse(localStorage.getItem(KEY));
+        if (data && Array.isArray(data.pengeluaran) && Array.isArray(data.kas)) return data;
+    } catch {}
+    return null;
+}
+
+let data = ambilData();
+
+const form = document.getElementById("form");
+const keterangan = document.getElementById("keterangan");
+const tanggal = document.getElementById("tanggal");
+const jumlah = document.getElementById("jumlah");
+
+const item = data?.pengeluaran.find(p => p.id === id);
+
+if (!item) {
+    form.classList.add("hidden");
+    document.getElementById("hapus").classList.add("hidden");
+    const pesan = document.createElement("p");
+    pesan.className = "text-red-600 text-center";
+    pesan.textContent = "Data demo tidak ditemukan. Silakan kembali ke halaman kas.";
+    form.before(pesan);
+} else {
+    keterangan.value = item.keterangan;
+    tanggal.value = item.tanggal;
+    jumlah.value = item.jumlah;
+}
+
+form.addEventListener("submit", event => {
+    event.preventDefault();
+    if (!data || !item) return;
+
+    const nominal = Number(jumlah.value);
+    if (!keterangan.value.trim() || !tanggal.value || !Number.isFinite(nominal) || nominal <= 0) {
+        alert("Periksa kembali data pengeluaran.");
+        return;
+    }
+
+    item.keterangan = keterangan.value.trim();
+    item.tanggal = tanggal.value;
+    item.jumlah = nominal;
+
+    localStorage.setItem(KEY, JSON.stringify(data));
+    alert("Perubahan demo berhasil disimpan.");
+    location.href = "kas.html";
+});
+
+document.getElementById("hapus").addEventListener("click", () => {
+    if (!data || !item) return;
+    if (!confirm("Hapus data pengeluaran demo ini?")) return;
+
+    data.pengeluaran = data.pengeluaran.filter(p => p.id !== id);
+    localStorage.setItem(KEY, JSON.stringify(data));
+    alert("Data demo berhasil dihapus.");
+    location.href = "kas.html";
+});
+</script>
+</body>
+</html>
+```

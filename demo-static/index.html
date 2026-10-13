@@ -1,0 +1,55 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Utama - Kas Kelas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center font-sans">
+    <main class="max-w-4xl w-full px-6 py-10">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-slate-800 mb-3">
+                Selamat Datang! 👋
+            </h1>
+            <p class="text-slate-600 text-lg">
+                Pilih menu untuk mulai mengelola data kelas.
+            </p>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <a href="siswa.html"
+               class="group bg-white p-10 rounded-3xl shadow-md hover:shadow-xl transition-all border-b-8 border-emerald-500 text-center">
+                <div class="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">👨‍🎓</div>
+                <h2 class="text-2xl font-bold text-slate-800">Daftar Siswa</h2>
+                <p class="text-slate-500 mt-2">Input nama &amp; nomor absen.</p>
+                <p class="text-slate-500 mt-2">
+                    Digunakan untuk menambahkan dan mengelola data siswa.
+                </p>
+            </a>
+
+            <a href="kas.html"
+               class="group bg-white p-10 rounded-3xl shadow-md hover:shadow-xl transition-all border-b-8 border-indigo-500 text-center">
+                <div class="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">💰</div>
+                <h2 class="text-2xl font-bold text-slate-800">Uang Kas</h2>
+                <p class="text-slate-500 mt-2">Catat pemasukan &amp; riwayat.</p>
+                <p class="text-slate-500 mt-2">
+                    Digunakan untuk melihat pemasukan, pengeluaran, dan riwayat transaksi.
+                </p>
+            </a>
+        </section>
+
+        <footer class="mt-16 text-center">
+            <button onclick="alert('Ini hanya demo. Fitur logout belum terhubung ke sistem login.')"
+                    class="bg-slate-200 hover:bg-red-100 hover:text-red-600 text-slate-600 px-6 py-3 rounded-full font-semibold transition-colors">
+                Logout (Keluar)
+            </button>
+            <p class="text-slate-400 text-sm mt-6">
+                Kaskelas Web — Demo Tampilan
+            </p>
+        </footer>
+    </main>
+</body>
+</html>
+```
